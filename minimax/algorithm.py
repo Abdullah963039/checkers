@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from constants.colors import PLAYER_2, PLAYER_1
 
+
 def minimax(position, depth, max_player, game):
     """
     Args:
@@ -41,9 +42,9 @@ def get_all_moves(board, color, game):
     for piece in board.get_all_pieces(color):
         valid_moves = board.get_valid_moves(piece)
         for move, skip in valid_moves.items():
-            temp_board = deepcopy(board)
+            temp_board = deepcopy(board)  # This should now work without issues
             temp_piece = temp_board.get_piece(int(piece.pos.x), int(piece.pos.y))
-            new_board = simulate_move(temp_piece, move, temp_board, game, skip)
+            new_board = simulate_move(temp_piece, move, temp_board, skip)
             moves.append(new_board)
 
     return moves

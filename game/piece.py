@@ -43,3 +43,8 @@ class Piece:
     @property
     def radius(self):
         return SQUARE_SIZE // 2 - self.PADDING
+
+    def __deepcopy__(self, memo):
+        new_piece = Piece(int(self.pos.x), int(self.pos.y), self.color)
+        new_piece.king = self.king  # Copy only the necessary attributes
+        return new_piece

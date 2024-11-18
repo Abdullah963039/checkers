@@ -1,3 +1,4 @@
+import copy
 import pygame as pg
 
 from constants import COLS_NUM, ROWS_NUM, BOARD_HEIGHT, BOARD_WIDTH, SQUARE_SIZE
@@ -13,6 +14,15 @@ class Board:
         self.surface = pg.Surface((BOARD_WIDTH, BOARD_HEIGHT))
         self.pieces = []
         self.__create_board()
+    
+    def __deepcopy__(self, memo):
+        new_board = Board()  # Create a new Board instance
+        new_board.p1_left = self.p1_left
+        new_board.p2_left = self.p2_left
+        new_board.p1_kings = self.p1_kings
+        new_board.p2_kings = self.p2_kings
+        new_board.board = copy.deepcopy(self.board, memo)  # Deepcopy the board state
+        return new_board
 
     def draw_board(self, window: pg.Surface):
         self.__draw_squares()
