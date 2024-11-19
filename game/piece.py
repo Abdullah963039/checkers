@@ -11,6 +11,7 @@ black_piece = pg.transform.scale(pg.image.load("assets/black_piece.png"), (110, 
 white_king = pg.transform.scale(pg.image.load("assets/white_king.png"), (110, 110))
 black_king = pg.transform.scale(pg.image.load("assets/black_king.png"), (110, 110))
 
+# TODO: Fix king graphic bug
 
 class Piece:
     PADDING = 12
@@ -31,12 +32,7 @@ class Piece:
         self.pos = Vector2(row, col)
 
     def draw(self, window: pg.SurfaceType):
-        x_axis = self.pos.y * SQUARE_SIZE - (
-            abs(self.__piece_graphic.get_width() // 2 - SQUARE_SIZE // 2)
-        )
-        y_axis = self.pos.x * SQUARE_SIZE - (
-            abs(self.__piece_graphic.get_height() // 2 - SQUARE_SIZE // 2)
-        )
+        x_axis, y_axis = self.__get_piece_graphic_position()
 
         window.blit(self.__piece_graphic, (x_axis, y_axis))
 
@@ -48,3 +44,16 @@ class Piece:
         new_piece = Piece(int(self.pos.x), int(self.pos.y), self.color)
         new_piece.king = self.king  # Copy only the necessary attributes
         return new_piece
+
+    def __str__(self):
+        return f"({int(self.pos.x)}, {int(self.pos.y)}) {"king" if self.king else ""}"
+
+    def __get_piece_graphic_position(self):
+        x_axis = self.pos.y * SQUARE_SIZE - (
+            abs(self.__piece_graphic.get_width() // 2 - SQUARE_SIZE // 2)
+        )
+        y_axis = self.pos.x * SQUARE_SIZE - (
+            abs(self.__piece_graphic.get_height() // 2 - SQUARE_SIZE // 2)
+        )
+
+        return x_axis, y_axis

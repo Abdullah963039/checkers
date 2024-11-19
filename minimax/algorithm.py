@@ -44,13 +44,13 @@ def get_all_moves(board, color, game):
         for move, skip in valid_moves.items():
             temp_board = deepcopy(board)  # This should now work without issues
             temp_piece = temp_board.get_piece(int(piece.pos.x), int(piece.pos.y))
-            new_board = simulate_move(temp_piece, move, temp_board, skip)
+            new_board = simulate_move(temp_piece, move, temp_board, game, skip)
             moves.append(new_board)
 
     return moves
 
 
-def simulate_move(piece, move, board, skip):
+def simulate_move(piece, move, board, game, skip):
     board.move(piece, move[0], move[1])
     if skip:
         board.remove(skip)

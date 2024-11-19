@@ -1,4 +1,3 @@
-import copy
 import pygame as pg
 
 from constants import COLS_NUM, ROWS_NUM, BOARD_HEIGHT, BOARD_WIDTH, SQUARE_SIZE
@@ -11,36 +10,27 @@ class Board:
         self.board = []
         self.p1_left = self.p2_left = 12
         self.p1_kings = self.p2_kings = 0
-        self.surface = pg.Surface((BOARD_WIDTH, BOARD_HEIGHT))
-        self.pieces = []
         self.__create_board()
-    
-    def __deepcopy__(self, memo):
-        new_board = Board()  # Create a new Board instance
-        new_board.p1_left = self.p1_left
-        new_board.p2_left = self.p2_left
-        new_board.p1_kings = self.p1_kings
-        new_board.p2_kings = self.p2_kings
-        new_board.board = copy.deepcopy(self.board, memo)  # Deepcopy the board state
-        return new_board
 
     def draw_board(self, window: pg.Surface):
-        self.__draw_squares()
+        board_surface = self.__draw_squares()
         for row in range(ROWS_NUM):
             for col in range(COLS_NUM):
                 piece = self.board[row][col]
                 if piece is not None:
-                    piece.draw(self.surface)
+                    piece.draw(board_surface)
 
         window.blit(
-            self.surface,
+            board_surface,
             (
-                window.get_width() // 2 - self.surface.get_width() // 2,
-                window.get_height() // 2 - self.surface.get_height() // 2,
+                window.get_width() // 2 - board_surface.get_width() // 2,
+                window.get_height() // 2 - board_surface.get_height() // 2,
             ),
         )
 
     def __draw_squares(self):
+        surface = pg.Surface((BOARD_WIDTH, BOARD_HEIGHT))
+
         for row in range(ROWS_NUM):
             if row % 2 == 0:
                 for col in range(COLS_NUM):
@@ -48,9 +38,9 @@ class Board:
                         row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE
                     )
                     if col % 2 == 0:
-                        pg.draw.rect(self.surface, LIGHT_SQUARE, square_rect)
+                        pg.draw.rect(surface, LIGHT_SQUARE, square_rect)
                     else:
-                        pg.draw.rect(self.surface, DARK_SQUARE, square_rect)
+                        pg.draw.rect(surface, DARK_SQUARE, square_rect)
 
             else:
                 for col in range(COLS_NUM):
@@ -58,9 +48,10 @@ class Board:
                         row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE
                     )
                     if col % 2 != 0:
-                        pg.draw.rect(self.surface, LIGHT_SQUARE, square_rect)
+                        pg.draw.rect(surface, LIGHT_SQUARE, square_rect)
                     else:
-                        pg.draw.rect(self.surface, DARK_SQUARE, square_rect)
+                        pg.draw.rect(surface, DARK_SQUARE, square_rect)
+        return surface
 
     def __create_board(self):
         for row in range(ROWS_NUM):
@@ -90,7 +81,7 @@ class Board:
     def evaluate(self):
         return self.p2_left - self.p1_left + (self.p2_kings * 0.5 - self.p1_kings * 0.5)
 
-    def move(self, piece, row, col):
+    def move(self, piece: Piece, row, col):
         self.board[int(piece.pos.x)][int(piece.pos.y)], self.board[row][col] = (
             self.board[row][col],
             self.board[int(piece.pos.x)][int(piece.pos.y)],
@@ -104,12 +95,51 @@ class Board:
             else:
                 self.p2_kings += 1
 
+    def get_valid_moves(self, piece: Piece):
+        moves = {}
+        left = int(piece.pos.y - 1)
+        right = int(piece.pos.y + 1)
+        row = int(piece.pos.x)
+
+        if piece.color == PLAYER_1 or piece.king:
+            moves.update(
+                self.__traverse_left(row - 1, max(row - 3, -1), -1, piece.color, left)
+            )
+            moves.update(
+                self.__traverse_right(row - 1, max(row - 3, -1), -1, piece.color, right)
+            )
+
+        if piece.color == PLAYER_2 or piece.king:
+            moves.update(
+                self.__traverse_left(
+                    row + 1, min(row + 3, ROWS_NUM), 1, piece.color, left
+                )
+            )
+            moves.update(
+                self.__traverse_right(
+                    row + 1, min(row + 3, ROWS_NUM), 1, piece.color, right
+                )
+            )
+
+        return moves
+
+    def get_valid_player_moves(self, color):
+        total_valid_moves = 0
+
+        for piece in self.get_all_pieces(color):
+            if piece is None:
+                return 0
+            valid_moves = self.get_valid_moves(piece)
+            total_valid_moves += len(valid_moves)
+
+        return total_valid_moves
+    
     def remove(self, pieces):
         for piece in pieces:
             self.board[int(piece.pos.x)][int(piece.pos.y)] = None
 
-        if piece != 0:
-            if piece.color == PLAYER_2:
+        if piece is not None:
+            if piece.color == PLAYER_1:
                 self.p1_left -= 1
             else:
                 self.p2_left -= 1
@@ -211,30 +241,3 @@ class Board:
         else:
             return None
 
-    def get_valid_moves(self, piece: Piece):
-        moves = {}
-        left = int(piece.pos.y - 1)
-        right = int(piece.pos.y + 1)
-        row = int(piece.pos.x)
-
-        if piece.color == PLAYER_1 or piece.king:
-            moves.update(
-                self.__traverse_left(row - 1, max(row - 3, -1), -1, piece.color, left)
-            )
-            moves.update(
-                self.__traverse_right(row - 1, max(row - 3, -1), -1, piece.color, right)
-            )
-
-        if piece.color == PLAYER_2 or piece.king:
-            moves.update(
-                self.__traverse_left(
-                    row + 1, min(row + 3, ROWS_NUM), 1, piece.color, left
-                )
-            )
-            moves.update(
-                self.__traverse_right(
-                    row + 1, min(row + 3, ROWS_NUM), 1, piece.color, right
-                )
-            )
-
-        return moves

@@ -1,7 +1,7 @@
 import pygame as pg
 
 from constants import AI_ENGINE_DEPTH, BOARD_HEIGHT, BOARD_WIDTH, FPS, SQUARE_SIZE
-from constants.colors import BOARD_BORDER, PLAYER_1, PLAYER_2
+from constants.colors import BOARD_BORDER, PLAYER_1, PLAYER_2, SELECTED_SQUARE_BG, VALID_SQUARE_BG
 
 from game.board import Board
 from minimax.algorithm import minimax
@@ -44,9 +44,45 @@ class Game:
             self.__update()
 
         pg.quit()
+    
+    def __draw_selected_overlay(self):
+        if self.__selected is None:
+            return False
+        # Draw the selected square if a piece is selected
+        selected_row = int(self.__selected.pos.x)
+        selected_col = int(self.__selected.pos.y)
+
+        # Calculate the position of the selected square
+        board_x = self.screen.get_width() // 2 - BOARD_WIDTH // 2
+        board_y = self.screen.get_height() // 2 - BOARD_HEIGHT // 2
+
+        selected_square_rect = pg.Rect(
+            board_x + selected_col * SQUARE_SIZE,
+            board_y + selected_row * SQUARE_SIZE,
+            SQUARE_SIZE,
+            SQUARE_SIZE
+        )
+
+        # Create an overlay for the selected square
+        selected_color = (255, 0, 0)  # RGB color for the selected square
+        overlay = pg.Surface((SQUARE_SIZE, SQUARE_SIZE), pg.SRCALPHA)  # Create a surface with alpha
+        overlay.fill(selected_color + (0,))  # Fill with selected color and set alpha (150 for transparency)
+
+        # Blit the overlay onto the screen first
+        self.screen.blit(overlay, (selected_square_rect.x, selected_square_rect.y))
+
+        return True
+
+
 
     def __update(self):
+        self.screen.fill(BOARD_BORDER)
+
+        
+
+        # Draw the board and valid moves
         self.__board.draw_board(self.screen)
+        self.__draw_selected_overlay()
         self.draw_valid_moves(self.__valid_moves)
         pg.display.flip()
 
@@ -81,7 +117,6 @@ class Game:
         if piece is None:
             self.__valid_moves = {}  # Clear valid moves
             self.__selected = None  # Deselect any selected piece
-            # Draw transparent yellow square under the piece
             return False
 
         if piece is not None and piece.color == self.__turn:
@@ -109,17 +144,27 @@ class Game:
         return True
 
     def draw_valid_moves(self, moves):
+        # Calculate the position of the board in the window
+        board_x = self.screen.get_width() // 2 - BOARD_WIDTH // 2
+        board_y = self.screen.get_height() // 2 - BOARD_HEIGHT // 2
+
         for move in moves:
             row, col = move
-            pg.draw.circle(
-                self.screen,
-                (0, 255, 0),
-                (
-                    col * SQUARE_SIZE + SQUARE_SIZE // 2,
-                    row * SQUARE_SIZE + SQUARE_SIZE // 2,
-                ),
-                15,
+
+            # Create a rectangle for the valid move square
+            valid_move_rect = pg.Rect(
+                board_x + col * SQUARE_SIZE,
+                board_y + row * SQUARE_SIZE,
+                SQUARE_SIZE,
+                SQUARE_SIZE,
             )
+
+            # Draw the rectangle with the specified color and transparency
+            overlay = pg.Surface((SQUARE_SIZE, SQUARE_SIZE), pg.SRCALPHA)
+            overlay.fill(VALID_SQUARE_BG + (180,))
+
+            # Blit the overlay onto the screen
+            self.screen.blit(overlay, (valid_move_rect.x, valid_move_rect.y))
 
     def __change_turn(self):
         self.__valid_moves = {}
@@ -137,8 +182,17 @@ class Game:
 
     def __get_row_col_from_mouse(self, pos):
         x, y = pos
-        row = y // SQUARE_SIZE
-        col = x // SQUARE_SIZE
+        # Calculate the position of the board in the window
+        board_x = self.screen.get_width() // 2 - BOARD_WIDTH // 2
+        board_y = self.screen.get_height() // 2 - BOARD_HEIGHT // 2
+
+        # Adjust mouse position relative to the board
+        relative_x = x - board_x
+        relative_y = y - board_y
+
+        # Calculate row and column based on the adjusted position
+        row = relative_y // SQUARE_SIZE
+        col = relative_x // SQUARE_SIZE
 
         return row, col
 
