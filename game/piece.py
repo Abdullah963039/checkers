@@ -2,7 +2,7 @@ import pygame as pg
 from pygame.math import Vector2
 
 from constants import SQUARE_SIZE
-from constants.colors import BLACK
+from constants.colors import WHITE
 
 
 white_piece = pg.transform.scale(pg.image.load("assets/white_piece.png"), (110, 110))
@@ -11,7 +11,6 @@ black_piece = pg.transform.scale(pg.image.load("assets/black_piece.png"), (110, 
 white_king = pg.transform.scale(pg.image.load("assets/white_king.png"), (110, 110))
 black_king = pg.transform.scale(pg.image.load("assets/black_king.png"), (110, 110))
 
-# TODO: Fix king graphic bug
 
 class Piece:
     PADDING = 12
@@ -22,19 +21,23 @@ class Piece:
         self.color = color
         self.king = False
 
-        self.__piece_graphic = black_piece if color == BLACK else white_piece
-
     def make_king(self):
         self.king = True
-        self.__piece_graphic = black_king if self.color == BLACK else white_king
 
     def move(self, row, col):
         self.pos = Vector2(row, col)
 
     def draw(self, window: pg.SurfaceType):
         x_axis, y_axis = self.__get_piece_graphic_position()
+        graphic = self.__get_graphic()
 
-        window.blit(self.__piece_graphic, (x_axis, y_axis))
+        window.blit(graphic, (x_axis, y_axis))
+
+    def __get_graphic(self):
+        if self.king:
+            return white_king if self.color == WHITE else black_king
+        else:
+            return white_piece if self.color == WHITE else black_piece
 
     @property
     def radius(self):
@@ -49,11 +52,12 @@ class Piece:
         return f"({int(self.pos.x)}, {int(self.pos.y)}) {"king" if self.king else ""}"
 
     def __get_piece_graphic_position(self):
+        graphic = self.__get_graphic()
         x_axis = self.pos.y * SQUARE_SIZE - (
-            abs(self.__piece_graphic.get_width() // 2 - SQUARE_SIZE // 2)
+            abs(graphic.get_width() // 2 - SQUARE_SIZE // 2)
         )
         y_axis = self.pos.x * SQUARE_SIZE - (
-            abs(self.__piece_graphic.get_height() // 2 - SQUARE_SIZE // 2)
+            abs(graphic.get_height() // 2 - SQUARE_SIZE // 2)
         )
 
         return x_axis, y_axis
