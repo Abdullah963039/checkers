@@ -1,7 +1,13 @@
 import pygame as pg
 
 from constants import AI_ENGINE_DEPTH, BOARD_HEIGHT, BOARD_WIDTH, FPS, SQUARE_SIZE
-from constants.colors import BOARD_BORDER, PLAYER_1, PLAYER_2, SELECTED_SQUARE_BG, VALID_SQUARE_BG
+from constants.colors import (
+    BOARD_BORDER,
+    PLAYER_1,
+    PLAYER_2,
+    SELECTED_SQUARE_BG,
+    VALID_SQUARE_BG,
+)
 
 from game.board import Board
 from minimax.algorithm import minimax
@@ -44,10 +50,11 @@ class Game:
             self.__update()
 
         pg.quit()
-    
+
     def __draw_selected_overlay(self):
         if self.__selected is None:
             return False
+        
         # Draw the selected square if a piece is selected
         selected_row = int(self.__selected.pos.x)
         selected_col = int(self.__selected.pos.y)
@@ -60,25 +67,24 @@ class Game:
             board_x + selected_col * SQUARE_SIZE,
             board_y + selected_row * SQUARE_SIZE,
             SQUARE_SIZE,
-            SQUARE_SIZE
+            SQUARE_SIZE,
         )
 
         # Create an overlay for the selected square
-        selected_color = (255, 0, 0)  # RGB color for the selected square
-        overlay = pg.Surface((SQUARE_SIZE, SQUARE_SIZE), pg.SRCALPHA)  # Create a surface with alpha
-        overlay.fill(selected_color + (0,))  # Fill with selected color and set alpha (150 for transparency)
+        overlay = pg.Surface(
+            (SQUARE_SIZE, SQUARE_SIZE), pg.SRCALPHA
+        )  # Create a surface with alpha
+        overlay.fill(
+            SELECTED_SQUARE_BG + (200,)
+        )  # Fill with selected color and set alpha (150 for transparency)
 
         # Blit the overlay onto the screen first
         self.screen.blit(overlay, (selected_square_rect.x, selected_square_rect.y))
 
         return True
 
-
-
     def __update(self):
         self.screen.fill(BOARD_BORDER)
-
-        
 
         # Draw the board and valid moves
         self.__board.draw_board(self.screen)

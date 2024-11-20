@@ -61,3 +61,6 @@ class Piece:
         )
 
         return x_axis, y_axis
+
+    def __eq__(self, piece):
+        return piece.pox.x == self.pos.x and piece.pos.y == self.pos.y
