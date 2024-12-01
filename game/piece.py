@@ -1,21 +1,18 @@
 import pygame as pg
 from pygame.math import Vector2
 
-from constants import SQUARE_SIZE
+from constants import PIECE_PADDING, PIECE_SIZE, SQUARE_SIZE
 from constants.colors import WHITE
 
 
-white_piece = pg.transform.scale(pg.image.load("assets/white_piece.png"), (110, 110))
-black_piece = pg.transform.scale(pg.image.load("assets/black_piece.png"), (110, 110))
+white_piece = pg.transform.scale(pg.image.load("assets/white_piece.png"), PIECE_SIZE)
+black_piece = pg.transform.scale(pg.image.load("assets/black_piece.png"), PIECE_SIZE)
 
-white_king = pg.transform.scale(pg.image.load("assets/white_king.png"), (110, 110))
-black_king = pg.transform.scale(pg.image.load("assets/black_king.png"), (110, 110))
+white_king = pg.transform.scale(pg.image.load("assets/white_king.png"), PIECE_SIZE)
+black_king = pg.transform.scale(pg.image.load("assets/black_king.png"), PIECE_SIZE)
 
 
 class Piece:
-    PADDING = 12
-    OUTLINE = 2
-
     def __init__(self, row, col, color):
         self.pos = Vector2(row, col)
         self.color = color
@@ -41,7 +38,7 @@ class Piece:
 
     @property
     def radius(self):
-        return SQUARE_SIZE // 2 - self.PADDING
+        return SQUARE_SIZE // 2 - PIECE_PADDING
 
     def __deepcopy__(self, memo):
         new_piece = Piece(int(self.pos.x), int(self.pos.y), self.color)
