@@ -1,21 +1,7 @@
 import pygame as pg
 
-from constants import (
-    AI_ENGINE_DEPTH,
-    BOARD_HEIGHT,
-    BOARD_WIDTH,
-    FPS,
-    PIECE_WIDTH,
-    SQUARE_SIZE,
-)
-from constants.colors import (
-    BOARD_BORDER,
-    PLAYER_1,
-    PLAYER_2,
-    SELECTED_SQUARE_BG,
-    VALID_SQUARE_BG,
-    WHITE,
-)
+from constants import AI_ENGINE_DEPTH, BOARD_HEIGHT, BOARD_WIDTH, FPS, SQUARE_SIZE
+from constants.colors import BOARD_BORDER, PLAYER_1, PLAYER_2, VALID_SQUARE_BG
 
 from game.board import Board
 from minimax.algorithm import minimax
@@ -32,7 +18,7 @@ class Game:
         self.__running = True
 
     def __initialize_game(self):
-        self.__selected = None
+        self.__selected_piece = None
         self.__board = Board()
         self.__turn = PLAYER_1
         self.__valid_moves = {}
@@ -59,52 +45,11 @@ class Game:
 
         pg.quit()
 
-    def __draw_selected_overlay(self):
-        if self.__selected is None:
-            return False
-
-        # Draw the selected square if a piece is selected
-        selected_row = int(self.__selected.pos.x)
-        selected_col = int(self.__selected.pos.y)
-
-        # Calculate the position of the selected square
-        board_x = self.screen.get_width() // 2 - BOARD_WIDTH // 2
-        board_y = self.screen.get_height() // 2 - BOARD_HEIGHT // 2
-
-        selected_square_rect = pg.Rect(
-            board_x + selected_col * SQUARE_SIZE,
-            board_y + selected_row * SQUARE_SIZE,
-            SQUARE_SIZE,
-            SQUARE_SIZE,
-        )
-
-        # Create an overlay for the selected square
-        # Create a surface with alpha
-        overlay = pg.Surface((SQUARE_SIZE, SQUARE_SIZE), pg.SRCALPHA)
-        # Fill with selected color and set alpha (150 for transparency)
-        overlay.fill(SELECTED_SQUARE_BG + (150,))
-
-        # Blit the overlay onto the screen first
-        self.screen.blit(overlay, (selected_square_rect.x, selected_square_rect.y))
-
-        pg.draw.circle(
-            self.screen,
-            WHITE,
-            (
-                selected_square_rect.x + 1 + SQUARE_SIZE // 2,
-                selected_square_rect.y + 1 + SQUARE_SIZE // 2,
-            ),
-            PIECE_WIDTH // 4 + 1,
-        )
-
-        return True
-
     def __update(self):
         self.screen.fill(BOARD_BORDER)
 
         # Draw the board and valid moves
         self.__board.draw_board(self.screen)
-        self.__draw_selected_overlay()
         self.draw_valid_moves(self.__valid_moves)
         pg.display.flip()
 
@@ -128,32 +73,35 @@ class Game:
 
     def __select(self, row, col):
         # User clicks on square after selecting a piece
-        if self.__selected:
+        if self.__selected_piece:
             valid_move = self.__move(row, col)
             if not valid_move:
-                self.__selected = None
+                self.__selected_piece.unselect()
+                self.__selected_piece = None
                 self.__select(row, col)
 
         piece = self.__board.get_piece(row, col)
 
         if piece is None:
             self.__valid_moves = {}  # Clear valid moves
-            self.__selected = None  # Deselect any selected piece
+            self.__selected_piece = None  # Deselect any selected piece
             return False
 
         if piece is not None and piece.color == self.__turn:
-            self.__selected = piece
+            self.__selected_piece = piece
+            self.__selected_piece.select()
             self.__valid_moves = self.__board.get_valid_moves(piece)
             return True
 
         self.__valid_moves = {}
-        self.__selected = None
+        # self.__selected_piece.unselect()
+        self.__selected_piece = None
         return False
 
     def __move(self, row, col):
         piece = self.__board.get_piece(row, col)
-        if self.__selected and piece is None and (row, col) in self.__valid_moves:
-            self.__board.move(self.__selected, row, col)
+        if self.__selected_piece and piece is None and (row, col) in self.__valid_moves:
+            self.__board.move(self.__selected_piece, row, col)
             skipped = self.__valid_moves[(row, col)]
 
             if skipped:
