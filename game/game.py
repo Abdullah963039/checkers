@@ -66,10 +66,18 @@ class Game:
                 self.screen = pg.display.set_mode((new_width, new_height), pg.RESIZABLE)
             # Mouse click
             if event.type == pg.MOUSEBUTTONDOWN:
-                pos = pg.mouse.get_pos()
-                row, col = self.__get_row_col_from_mouse(pos)
+                x_click, y_click = pg.mouse.get_pos()
 
-                self.__select(row, col)
+                # Check if user click on the board
+                board_x = self.screen.get_width() // 2 - BOARD_WIDTH // 2
+                board_y = self.screen.get_height() // 2 - BOARD_HEIGHT // 2
+                is_in_board = (x_click in range(board_x, board_x + BOARD_WIDTH)) and (
+                    y_click in range(board_y, board_y + BOARD_HEIGHT)
+                )
+
+                if is_in_board:
+                    row, col = self.__get_row_col_from_mouse(x_click, y_click)
+                    self.__select(row, col)
 
     def __select(self, row, col):
         # User clicks on square after selecting a piece
@@ -150,8 +158,7 @@ class Game:
         self.__board = board
         self.__change_turn()
 
-    def __get_row_col_from_mouse(self, pos):
-        x, y = pos
+    def __get_row_col_from_mouse(self, x, y):
         # Calculate the position of the board in the window
         board_x = self.screen.get_width() // 2 - BOARD_WIDTH // 2
         board_y = self.screen.get_height() // 2 - BOARD_HEIGHT // 2
