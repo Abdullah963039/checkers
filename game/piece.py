@@ -2,7 +2,7 @@ import pygame as pg
 from pygame.math import Vector2
 
 from constants import PIECE_PADDING, PIECE_SIZE, SQUARE_SIZE
-from constants.colors import WHITE
+from constants.colors import SELECTED_SQUARE_BG, WHITE
 
 
 white_piece = pg.transform.scale(pg.image.load("assets/white_piece.png"), PIECE_SIZE)
@@ -17,6 +17,7 @@ class Piece:
         self.pos = Vector2(row, col)
         self.color = color
         self.king = False
+        self.selected = False
 
     def make_king(self):
         self.king = True
@@ -27,7 +28,9 @@ class Piece:
     def draw(self, window: pg.SurfaceType):
         x_axis, y_axis = self.__get_piece_graphic_position()
         graphic = self.__get_graphic()
-
+        if self.selected:
+            selected_surface = self.__get_selected_surface()
+            window.blit(selected_surface, (self.pos.y * SQUARE_SIZE, self.pos.x * SQUARE_SIZE))
         window.blit(graphic, (x_axis, y_axis))
 
     def __get_graphic(self):
@@ -61,3 +64,15 @@ class Piece:
 
     def __eq__(self, piece):
         return piece.pox.x == self.pos.x and piece.pos.y == self.pos.y
+
+    def select(self):
+        self.selected = True
+
+    def unselect(self):
+        self.selected = False
+
+    def __get_selected_surface(self):
+        selected_square_surface = pg.Surface((SQUARE_SIZE, SQUARE_SIZE), pg.SRCALPHA)
+        selected_square_surface.fill(SELECTED_SQUARE_BG + (178,))
+
+        return selected_square_surface
