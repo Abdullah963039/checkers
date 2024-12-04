@@ -11,6 +11,8 @@ black_piece = pg.transform.scale(pg.image.load("assets/black_piece.png"), PIECE_
 white_king = pg.transform.scale(pg.image.load("assets/white_king.png"), PIECE_SIZE)
 black_king = pg.transform.scale(pg.image.load("assets/black_king.png"), PIECE_SIZE)
 
+vel = 5
+
 
 class Piece:
     def __init__(self, row, col, color):
@@ -23,6 +25,7 @@ class Piece:
         self.king = True
 
     def move(self, row, col):
+        #TODO: Animate Piece Move
         self.pos = Vector2(row, col)
 
     def draw(self, window: pg.SurfaceType):
@@ -30,7 +33,9 @@ class Piece:
         graphic = self.__get_graphic()
         if self.selected:
             selected_surface = self.__get_selected_surface()
-            window.blit(selected_surface, (self.pos.y * SQUARE_SIZE, self.pos.x * SQUARE_SIZE))
+            window.blit(
+                selected_surface, (self.pos.y * SQUARE_SIZE, self.pos.x * SQUARE_SIZE)
+            )
         window.blit(graphic, (x_axis, y_axis))
 
     def __get_graphic(self):
@@ -38,6 +43,13 @@ class Piece:
             return white_king if self.color == WHITE else black_king
         else:
             return white_piece if self.color == WHITE else black_piece
+
+    def capture(self):
+        #TODO: Animate Piece Capture
+        graphic = self.__get_graphic()
+        pg.time.delay(200)
+        pg.transform.scale(graphic, (0, 0)).set_alpha(100)
+        pg.time.wait(100)
 
     @property
     def radius(self):

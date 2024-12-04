@@ -136,6 +136,7 @@ class Board:
     
     def remove(self, pieces):
         for piece in pieces:
+            #TODO: piece.capture()
             self.board[int(piece.pos.x)][int(piece.pos.y)] = None
 
         if piece is not None:
