@@ -136,6 +136,7 @@ class Board:
     
     def remove(self, pieces):
         for piece in pieces:
+            #TODO: piece.capture()
             self.board[int(piece.pos.x)][int(piece.pos.y)] = None
 
         if piece is not None:
@@ -234,9 +235,9 @@ class Board:
         return moves
 
     def winner(self):
-        if self.p1_left <= 0:
+        if self.p1_left <= 0 or self.get_valid_player_moves(PLAYER_1) == 0:
             return PLAYER_2
-        elif self.p2_left <= 0:
+        elif self.p2_left <= 0 or self.get_valid_player_moves(PLAYER_2) == 0:
             return PLAYER_1
         else:
             return None
