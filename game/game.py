@@ -22,18 +22,20 @@ class Game:
         self.__board = Board()
         self.__turn = PLAYER_1
         self.__valid_moves = {}
+        self.__game_state = "play"
 
     def start_game(self):
         clock = pg.time.Clock()
 
-        if self.__check_winner() is not None:
-            self.__end_game()
 
         while self.__running:
             self.screen.fill(BOARD_BORDER)
             clock.tick(FPS)
-            # Event Hanlder
 
+            if self.__check_winner() is not None:
+                self.__game_over()
+
+            # Event Hanlder
             if self.__turn == PLAYER_2:
                 _, new_board = minimax(self.__board, AI_ENGINE_DEPTH, PLAYER_2, self)
                 self.__ai_move(new_board)
@@ -46,11 +48,18 @@ class Game:
         pg.quit()
 
     def __update(self):
-        self.screen.fill(BOARD_BORDER)
+        if self.__game_state == "play":
+            self.screen.fill(BOARD_BORDER)
+        else:
+            self.screen.fill(BOARD_BORDER + (170,))
 
         # Draw the board and valid moves
         self.__board.draw_board(self.screen)
         self.draw_valid_moves(self.__valid_moves)
+
+        if self.__game_state == "over":
+            self.__render_game_over()
+
         pg.display.flip()
 
     def __handle_events(self):
@@ -75,7 +84,7 @@ class Game:
                     y_click in range(board_y, board_y + BOARD_HEIGHT)
                 )
 
-                if is_in_board:
+                if is_in_board and self.__game_state == 'play':
                     row, col = self.__get_row_col_from_mouse(x_click, y_click)
                     self.__select(row, col)
 
@@ -175,3 +184,31 @@ class Game:
 
     def __end_game(self):
         self.__running = False
+
+    def __game_over(self):
+        self.__game_state = "over"
+
+    def __render_game_over(self):
+        winner = self.__check_winner()
+
+        if winner is None:
+            return
+
+        surface = pg.Surface((self.screen.get_width(), self.screen.get_height()), pg.SRCALPHA)
+        surface.fill((0, 0, 0, 200))
+
+        text = "Congratulation You won" if winner == PLAYER_1 else "Game Over You Lose"
+        text_color = (29, 219, 51) if winner == PLAYER_1 else (214, 21, 21)
+        text_surface = pg.font.Font(None, 74).render(text, True, text_color)
+        text_rect = text_surface.get_rect(
+            center=(self.screen.get_width() // 2, self.screen.get_height() // 2)
+        )
+
+        self.screen.blit(
+            surface,
+            (
+                self.screen.get_width() // 2 - surface.get_width() // 2,
+                self.screen.get_height() // 2 - surface.get_height() // 2,
+            ),
+        )
+        self.screen.blit(text_surface, text_rect)
